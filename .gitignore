@@ -1,0 +1,66 @@
+# =============================================================================
+# Trained model checkpoints (too large for git; regenerate via `run_all_v2`)
+# =============================================================================
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
+# =============================================================================
+# Dataset and derived caches
+# =============================================================================
+# Course-provided dataset (not redistributed here)
+student_files/
+
+# Audio/MIDI feature caches (regenerated on first training run)
+cache_task1_audio/
+cache_task2_*/
+cache_task3_*/
+
+# =============================================================================
+# Prediction artifacts (only the three final files are committed)
+# =============================================================================
+predictions*_v*_backup.json
+predictions*_locked_*.json
+predictions*_candidate*.json
+
+# =============================================================================
+# Python
+# =============================================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+build/
+dist/
+.venv/
+venv/
+env/
+
+# =============================================================================
+# Editor / OS / tooling
+# =============================================================================
+.vscode/
+.idea/
+.cursor/
+.claude/
+.DS_Store
+Thumbs.db
+
+# =============================================================================
+# Logs and run artifacts
+# =============================================================================
+logs/
+*.log
+
+# Hugging Face model cache (downloaded AST weights, ~350 MB)
+.cache/
+hf_cache/
+
+# Local environment overrides
+.env
+.env.local

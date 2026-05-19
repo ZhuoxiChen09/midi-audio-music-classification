@@ -1,0 +1,21 @@
+# Core ML
+torch>=2.1
+torchaudio>=2.1
+torchvision>=0.16
+numpy>=1.24
+scikit-learn>=1.3
+xgboost>=2.0
+tqdm>=4.65
+
+# Audio / MIDI
+librosa>=0.10
+miditoolkit>=0.1.16
+
+# Image backbones used in Task 3 baseline
+timm>=0.9
+
+# AST fine-tune for Task 3
+transformers>=4.36
+
+# Notebook (only needed to open baselines.ipynb)
+jupyter>=1.0
