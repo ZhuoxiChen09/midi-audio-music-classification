@@ -23,15 +23,15 @@ Task 2 was tuned with cross-validation; final logit-averaged ensemble is the art
 
 ```
 .
-├── assignment1.py            # Final V2 solution — Transformer / AST models + ensembling entry points
-├── assignment1_baseline.py   # Classical baseline pipeline (HGB / XGB stack / ResNet34)
+├── pipeline.py               # Main pipeline — Transformer / AST models + ensembling entry points
+├── baseline.py               # Classical baseline pipeline (HGB / XGB stack / ResNet34)
 ├── baselines.ipynb           # Notebook version of the baseline pipeline
-├── RUN_V2.md                 # Detailed run instructions and tuning knobs
+├── RUNBOOK.md                # Detailed run instructions and tuning knobs
 ├── run_unattended.ps1        # Unattended overnight training driver (Windows PowerShell)
-├── writeup.txt               # Concise one-paragraph-per-task technical writeup
-├── predictions1.json         # Task 1 final submission
-├── predictions2.json         # Task 2 final submission
-├── predictions3.json         # Task 3 final submission
+├── writeup.txt               # One-paragraph-per-task technical summary
+├── predictions1.json         # Task 1 final predictions
+├── predictions2.json         # Task 2 final predictions
+├── predictions3.json         # Task 3 final predictions
 ├── requirements.txt
 └── README.md
 ```
@@ -115,7 +115,7 @@ student_files/
 ### 3. Smoke test (~10–15 min)
 
 ```powershell
-python -u -c "import assignment1 as v2; v2.run_quick_v2()"
+python -u -c "import pipeline as p; p.run_quick_v2()"
 ```
 
 You should see Task 1 val tail acc > 0.45, Task 2 val acc > 0.55, and Task 3 AST val mAP > 0.55.
@@ -123,23 +123,23 @@ You should see Task 1 val tail acc > 0.45, Task 2 val acc > 0.55, and Task 3 AST
 ### 4. Full run (~3.5–4.5 h)
 
 ```powershell
-python -u -c "import assignment1 as v2; v2.run_all_v2()"
+python -u -c "import pipeline as p; p.run_all_v2()"
 ```
 
-This writes `predictions{1,2,3}.json` ready to submit. See `RUN_V2.md` for per-task entry points, ensemble-weight tuning, OOM workarounds, and how to re-ensemble without retraining.
+This writes `predictions{1,2,3}.json`. See [`RUNBOOK.md`](RUNBOOK.md) for per-task entry points, ensemble-weight tuning, OOM workarounds, and how to re-ensemble without retraining.
 
 ### 5. Falling back to the classical baseline
 
 ```powershell
-python -u -c "import assignment1_baseline as a; a.run3_test_only_ensemble()"  # Task 3 from saved ResNet ckpts, no training
-python -u -c "import assignment1_baseline as a; a.run2()"                      # Task 2 tree stack
-python -u -c "import assignment1_baseline as a; a.run1()"                      # Task 1 HGB
+python -u -c "import baseline as a; a.run3_test_only_ensemble()"  # Task 3 from saved ResNet ckpts, no training
+python -u -c "import baseline as a; a.run2()"                      # Task 2 tree stack
+python -u -c "import baseline as a; a.run1()"                      # Task 1 HGB
 ```
 
 ---
 
 ## Notes
 
-* The `student_files/` dataset is course-provided and **not** redistributed in this repo.
+* The `student_files/` dataset is **not** redistributed in this repo.
 * Trained checkpoints (~2.2 GB total) are gitignored; they regenerate from `run_all_v2()`.
-* This project was built for UCSD **CSE 153R** (Music Information Retrieval), Spring 2026.
+* Originally developed for a graduate music-information-retrieval course.

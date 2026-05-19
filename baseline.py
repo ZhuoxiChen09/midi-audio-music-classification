@@ -1798,13 +1798,13 @@ def run3(fit_epochs=45, finetune_epochs=6, finetune_low_epochs=4):
     except Exception as exc:
         print(f"Test inference failed: {exc}")
         print("Checkpoint was saved; retry test only with:")
-        print('  python -u -c "import assignment1 as a; a.run3_test_only()"')
+        print('  python -u -c "import pipeline as a; a.run3_test_only()"')
         raise
 
 
 def run_all(fit_epochs=45, finetune_epochs=6, finetune_low_epochs=4):
     """Run Tasks 1–3 end-to-end (sklearn tasks then full GPU audio tagging)."""
-    print("\n=== Assignment 1: full run (Tasks 1, 2, 3) ===")
+    print("\n=== Baseline: full run (Tasks 1, 2, 3) ===")
     print("Compute: Task 1–2 → CPU (sklearn). Task 3 →", _task3_device_label())
     steps = [
         ("Task 1", lambda: run1()),

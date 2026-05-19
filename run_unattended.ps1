@@ -23,14 +23,14 @@ try {
     Write-Host "Working directory: $Root"
     Write-Host "Log: $LogPath"
 
-    python -u -c "import assignment1 as a; a.run3(fit_epochs=45, finetune_epochs=0, finetune_low_epochs=0)"
+    python -u -c "import pipeline as a; a.run3(fit_epochs=45, finetune_epochs=0, finetune_low_epochs=0)"
 
     if (Test-Path (Join-Path $Root "predictions3.json")) {
         Copy-Item -Force (Join-Path $Root "predictions3.json") $CandidateTask3
         Write-Host "Saved long-run Task 3 candidate to $CandidateTask3"
     }
 
-    python -m py_compile assignment1.py
+    python -m py_compile pipeline.py
     Write-Host "Unattended run finished."
 } catch {
     Write-Error $_

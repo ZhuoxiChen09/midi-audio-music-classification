@@ -1,7 +1,6 @@
-"""Assignment 1 — final submission code (V2).
+"""Main pipeline — deep-learning extensions over the classical baseline.
 
-Three neural extensions ensembled with the baseline pipeline in
-`assignment1_baseline.py`:
+Three neural models ensembled with the classical pipeline in `baseline.py`:
 
   * Task 1: small Transformer encoder over MIDI note-event tokens
             (per-note pitch + duration-bin + IOI-bin + velocity-bin embeddings,
@@ -47,8 +46,8 @@ import miditoolkit
 warnings.filterwarnings("ignore")
 
 # Re-use everything from the baseline module so we don't fork it.
-import assignment1_baseline as a1
-from assignment1_baseline import (
+import baseline as a1
+from baseline import (
     DATAROOT1,
     DATAROOT2,
     DATAROOT3,
@@ -1156,7 +1155,7 @@ def run1_v2_kfold(
             )
 
     # 3) HGB multi-seed: monkey-patch baseline SEED, train Model1 once per seed.
-    import assignment1_baseline as a1mod
+    import baseline as a1mod
     orig_seed = a1mod.SEED
     hgb_models = []
     hgb_classes_ref = None
@@ -2071,7 +2070,7 @@ def run_all_v2(
     t2_epochs: int = 18,
     t3_epochs: int = 12,
 ):
-    print("\n=== Assignment 1 V2: full run ===")
+    print("\n=== Pipeline: full run ===")
     t0 = time.time()
     run1_v2(quick=quick, epochs=t1_epochs)
     run2_v2(quick=quick, epochs=t2_epochs)
