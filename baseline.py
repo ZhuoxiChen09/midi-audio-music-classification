@@ -1,32 +1,32 @@
+import ast
 import copy
+import json
 import math
 import os
 import random
 import warnings
 
+import librosa
+import miditoolkit
 import numpy as np
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torchaudio
-from torch.utils.data import Dataset, DataLoader, random_split
-from torchaudio.transforms import MelSpectrogram, AmplitudeToDB
-from tqdm import tqdm
-
-import librosa
-import miditoolkit
+from sklearn.base import clone
 from sklearn.ensemble import (
-    ExtraTreesClassifier,
     HistGradientBoostingClassifier,
     RandomForestClassifier,
     VotingClassifier,
 )
-from sklearn.base import clone
-from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import accuracy_score, average_precision_score
-from sklearn.utils import Bunch
 from sklearn.model_selection import StratifiedKFold
+from sklearn.preprocessing import LabelEncoder
+from sklearn.utils import Bunch
 from sklearn.utils.class_weight import compute_sample_weight
+from torch.utils.data import DataLoader, Dataset, random_split
+from torchaudio.transforms import AmplitudeToDB, MelSpectrogram
+from tqdm import tqdm
 
 try:
     from xgboost import XGBClassifier
@@ -108,15 +108,22 @@ def _cross_val_scores_with_progress(estimator, X, y, cv, desc, fit_params=None):
     return np.array(scores)
 
 
-def write_submission_predictions(predictions, outpath, normalize_audio_paths=False):
+def write_submission_predictions(predictions, outpath, normalize_audio_paths=False, *, fmt="repr"):
+    """Save course-compatible literals by default, or opt into standard JSON."""
     serializable = predictions
     if normalize_audio_paths:
         serializable = {
             (k[2:] if isinstance(k, str) and k.startswith("./") else k): v
             for k, v in predictions.items()
         }
-    with open(outpath, "w") as fh:
-        fh.write(repr(serializable) + "\n")
+    if fmt == "repr":
+        content = repr(serializable)
+    elif fmt == "json":
+        content = json.dumps(serializable, allow_nan=False)
+    else:
+        raise ValueError("fmt must be 'repr' or 'json'")
+    with open(outpath, "w", encoding="utf-8") as fh:
+        fh.write(content + "\n")
     return serializable
 
 
@@ -388,7 +395,7 @@ class Model1:
 
     def train(self, train_path):
         with open(train_path, "r") as fh:
-            train_json = eval(fh.read())
+            train_json = ast.literal_eval(fh.read())
         self.train_labels = {k: int(v) for k, v in train_json.items()}
         paths = list(train_json.keys())
         y = np.array([int(train_json[p]) for p in paths])
@@ -436,7 +443,7 @@ class Model1:
 
     def predict(self, path, outpath=None):
         with open(path, "r") as fh:
-            data = eval(fh.read())
+            data = ast.literal_eval(fh.read())
         keys = list(data.keys()) if isinstance(data, dict) else list(data)
         X = self._featurize_many(keys, "Task1 predict features")
         probs = np.mean(
@@ -694,7 +701,7 @@ class Model2:
 
     def train(self, train_path):
         with open(train_path, "r") as fh:
-            data = eval(fh.read())
+            data = ast.literal_eval(fh.read())
         keys = list(data.keys())
 
         X_list = []
@@ -776,7 +783,7 @@ class Model2:
 
     def predict(self, path, outpath=None):
         with open(path, "r") as fh:
-            data = eval(fh.read())
+            data = ast.literal_eval(fh.read())
         keys = list(data.keys()) if isinstance(data, dict) else list(data)
         Xa = np.stack([self._pair_vec(p1, p2) for (p1, p2) in tqdm(keys, desc="Task2 predict (a)")])
         Xb = np.stack([self._pair_vec(p2, p1) for (p1, p2) in tqdm(keys, desc="Task2 predict (b)")])
@@ -1116,7 +1123,7 @@ class AudioResNetTagger(nn.Module):
         )
 
     def _build_resnet34(self, n_classes, pretrained):
-        from torchvision.models import resnet34, ResNet34_Weights
+        from torchvision.models import ResNet34_Weights, resnet34
 
         try:
             weights = ResNet34_Weights.IMAGENET1K_V1 if pretrained else None
@@ -1214,9 +1221,9 @@ class _Loaders:
         torch.manual_seed(seed)
         random.seed(seed)
         with open(train_path, "r") as fh:
-            meta_train = eval(fh.read())
+            meta_train = ast.literal_eval(fh.read())
         with open(test_path, "r") as fh:
-            test_keys = eval(fh.read())
+            test_keys = ast.literal_eval(fh.read())
         meta_train = _subset_meta(meta_train, max_train, seed=seed)
         if max_test is not None and max_test > 0 and len(test_keys) > max_test:
             rng = random.Random(seed)
@@ -1265,7 +1272,7 @@ class _Loaders:
 
 def _make_test_loader(test_path, mean, std, max_test=None, batch_size=None):
     with open(test_path, "r") as fh:
-        test_keys = eval(fh.read())
+        test_keys = ast.literal_eval(fh.read())
     if max_test is not None and max_test > 0 and len(test_keys) > max_test:
         test_keys = list(test_keys)[:max_test]
     meta_test = {k: [] for k in test_keys}
