@@ -979,7 +979,7 @@ def train_task1_ast_kfold(
                 (head if "classifier" in name else body).append(p)
             return head, body
 
-        def _build_optim(freeze: bool):
+        def _build_optim(model: nn.Module, *, freeze: bool):
             for name, p in model.named_parameters():
                 if freeze and ("classifier" not in name):
                     p.requires_grad = False
@@ -993,7 +993,7 @@ def train_task1_ast_kfold(
                 groups.append({"params": body, "lr": lr_backbone, "weight_decay": weight_decay})
             return torch.optim.AdamW(groups)
 
-        optim = _build_optim(freeze=True)
+        optim = _build_optim(model, freeze=True)
         steps_per_epoch = max(1, len(train_loader) // grad_accum)
         total_steps = steps_per_epoch * epochs
         warmup = max(50, total_steps // 20)
@@ -1010,7 +1010,7 @@ def train_task1_ast_kfold(
         unfrozen = False
         for epoch in range(epochs):
             if (not unfrozen) and epoch >= freeze_backbone_epochs:
-                optim = _build_optim(freeze=False)
+                optim = _build_optim(model, freeze=False)
                 sched = torch.optim.lr_scheduler.LambdaLR(optim, lr_lambda)
                 unfrozen = True
             model.train()
