@@ -91,6 +91,20 @@ python -m venv .venv
 pip install -r requirements.txt
 ```
 
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+```
+
+For the Python 3.11 CPU environment used in CI:
+
+```bash
+python -m pip install --extra-index-url https://download.pytorch.org/whl/cpu -r requirements-lock.txt
+```
+
+The optional `python scripts/to_json.py SOURCE DESTINATION` converter writes standard JSON to a new file.
+
 ### 2. Get the dataset
 
 The course-provided dataset is **not** included. Drop it into `./student_files/` so the layout matches:
@@ -118,6 +132,10 @@ student_files/
 python -u -c "import pipeline as p; p.run_quick_v2()"
 ```
 
+```bash
+python -u -c "import pipeline as p; p.run_quick_v2()"
+```
+
 You should see Task 1 val tail acc > 0.45, Task 2 val acc > 0.55, and Task 3 AST val mAP > 0.55.
 
 ### 4. Full run (~3.5–4.5 h)
@@ -126,11 +144,21 @@ You should see Task 1 val tail acc > 0.45, Task 2 val acc > 0.55, and Task 3 AST
 python -u -c "import pipeline as p; p.run_all_v2()"
 ```
 
+```bash
+python -u -c "import pipeline as p; p.run_all_v2()"
+```
+
 This writes `predictions{1,2,3}.json`. See [`RUNBOOK.md`](RUNBOOK.md) for per-task entry points, ensemble-weight tuning, OOM workarounds, and how to re-ensemble without retraining.
 
 ### 5. Falling back to the classical baseline
 
 ```powershell
+python -u -c "import baseline as a; a.run3_test_only_ensemble()"  # Task 3 from saved ResNet ckpts, no training
+python -u -c "import baseline as a; a.run2()"                      # Task 2 tree stack
+python -u -c "import baseline as a; a.run1()"                      # Task 1 HGB
+```
+
+```bash
 python -u -c "import baseline as a; a.run3_test_only_ensemble()"  # Task 3 from saved ResNet ckpts, no training
 python -u -c "import baseline as a; a.run2()"                      # Task 2 tree stack
 python -u -c "import baseline as a; a.run1()"                      # Task 1 HGB

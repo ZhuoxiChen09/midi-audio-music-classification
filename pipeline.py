@@ -26,14 +26,15 @@ Entry points:
 
 from __future__ import annotations
 
-import json
+import ast
 import math
 import os
 import random
 import time
 import warnings
-from typing import Iterable, List, Tuple
+from typing import List, Tuple
 
+import miditoolkit
 import numpy as np
 import torch
 import torch.nn as nn
@@ -41,24 +42,19 @@ import torch.nn.functional as F
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
-import miditoolkit
-
 warnings.filterwarnings("ignore")
 
 # Re-use everything from the baseline module so we don't fork it.
-import baseline as a1
 from baseline import (
     DATAROOT1,
     DATAROOT2,
     DATAROOT3,
+    TAGS,
     Model1,
     Model2,
-    TAGS,
-    write_submission_predictions,
-    _task3_checkpoint_path,
     _load_task3_checkpoint,
     _make_test_loader,
-    _Loaders,
+    write_submission_predictions,
 )
 
 SEED = 0
@@ -273,7 +269,7 @@ class _MidiTransformerT1(nn.Module):
 
 def _read_task1_train() -> Tuple[List[str], List[int]]:
     with open(os.path.join(DATAROOT1, "train.json")) as f:
-        d = eval(f.read())
+        d = ast.literal_eval(f.read())
     paths = list(d.keys())
     labels = [int(d[p]) for p in paths]
     return paths, labels
@@ -281,7 +277,7 @@ def _read_task1_train() -> Tuple[List[str], List[int]]:
 
 def _read_task1_test() -> List[str]:
     with open(os.path.join(DATAROOT1, "test.json")) as f:
-        d = eval(f.read())
+        d = ast.literal_eval(f.read())
     return list(d.keys()) if isinstance(d, dict) else list(d)
 
 
@@ -983,7 +979,7 @@ def train_task1_ast_kfold(
                 (head if "classifier" in name else body).append(p)
             return head, body
 
-        def _build_optim(freeze: bool):
+        def _build_optim(model: nn.Module, *, freeze: bool):
             for name, p in model.named_parameters():
                 if freeze and ("classifier" not in name):
                     p.requires_grad = False
@@ -997,7 +993,7 @@ def train_task1_ast_kfold(
                 groups.append({"params": body, "lr": lr_backbone, "weight_decay": weight_decay})
             return torch.optim.AdamW(groups)
 
-        optim = _build_optim(freeze=True)
+        optim = _build_optim(model, freeze=True)
         steps_per_epoch = max(1, len(train_loader) // grad_accum)
         total_steps = steps_per_epoch * epochs
         warmup = max(50, total_steps // 20)
@@ -1014,7 +1010,7 @@ def train_task1_ast_kfold(
         unfrozen = False
         for epoch in range(epochs):
             if (not unfrozen) and epoch >= freeze_backbone_epochs:
-                optim = _build_optim(freeze=False)
+                optim = _build_optim(model, freeze=False)
                 sched = torch.optim.lr_scheduler.LambdaLR(optim, lr_lambda)
                 unfrozen = True
             model.train()
@@ -1435,7 +1431,7 @@ class _PairTransformerT2(nn.Module):
 
 def _read_task2_train() -> Tuple[List[Tuple[str, str]], List[bool]]:
     with open(os.path.join(DATAROOT2, "train.json")) as f:
-        d = eval(f.read())
+        d = ast.literal_eval(f.read())
     pairs = list(d.keys())
     labels = [bool(d[k]) for k in pairs]
     return pairs, labels
@@ -1443,7 +1439,7 @@ def _read_task2_train() -> Tuple[List[Tuple[str, str]], List[bool]]:
 
 def _read_task2_test() -> List[Tuple[str, str]]:
     with open(os.path.join(DATAROOT2, "test.json")) as f:
-        d = eval(f.read())
+        d = ast.literal_eval(f.read())
     return list(d.keys()) if isinstance(d, dict) else list(d)
 
 
@@ -1743,12 +1739,12 @@ def _ast_collate_fn(fe):
 
 def _read_task3_train() -> dict:
     with open(os.path.join(DATAROOT3, "train.json")) as f:
-        return eval(f.read())
+        return ast.literal_eval(f.read())
 
 
 def _read_task3_test() -> List[str]:
     with open(os.path.join(DATAROOT3, "test.json")) as f:
-        d = eval(f.read())
+        d = ast.literal_eval(f.read())
     return list(d) if not isinstance(d, dict) else list(d.keys())
 
 
