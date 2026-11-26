@@ -1,6 +1,6 @@
 # MIDI & Audio Music Classification
 
-Three music-understanding tasks tackled with hybrid **classical + deep learning** ensembles. Each task pairs a hand-engineered tree/gradient-boosting model with a Transformer (or pretrained foundation model) and combines them at the logit/probability level. The result on every task is materially better than either component alone.
+Three music-understanding tasks tackled with hybrid **classical + deep learning** ensembles. Each task pairs a hand-engineered tree/gradient-boosting model with a Transformer (or pretrained foundation model) and combines them at the logit/probability level. The held-out results below cover composer identification and audio tagging.
 
 | Task | Problem | Input | Output | Final approach |
 | --- | --- | --- | --- | --- |
@@ -75,7 +75,15 @@ Probability-averaged ensemble of:
 
 * **AST fine-tune.** `MIT/ast-finetuned-audioset-10-10-0.4593` with a fresh 10-way multi-label head, BCE-with-logits, SpecAugment-style time/frequency masking, frozen-backbone warm-up, AdamW + cosine schedule with separate head / backbone learning rates.
 
-The AST half is the headline: a single AST fine-tune in ~1 epoch on a 512-sample subset already reaches val mAP ≈ 0.57, comfortably ahead of the from-scratch ResNet ensemble (val ≈ 0.47, leaderboard ≈ 0.44). Ensembling the two gives the locked **0.637** test mAP.
+The [runbook](RUNBOOK.md) records these audio-tagging scores. Read down a column when comparing models. A dash indicates an unreported score.
+
+| Model | Validation mAP | Held-out leaderboard mAP |
+| --- | ---: | ---: |
+| ResNet34 ensemble | ≈ 0.47 | ≈ 0.44 |
+| Audio Spectrogram Transformer (1 epoch, 512 training examples) | ≈ 0.57 | — |
+| ResNet34 + Audio Spectrogram Transformer | — | 0.637 |
+
+The transformer-only validation result comes from a short training run. The leaderboard comparison shows the combined model outperforming the reported ResNet baseline. A standalone transformer leaderboard score would be needed to measure the gain over that component.
 
 ---
 
